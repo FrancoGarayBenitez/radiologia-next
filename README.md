@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🩻 Radiología Mendoza
 
-## Getting Started
+Aplicación web fullstack para la gestión de solicitudes de estudios radiológicos, con paneles diferenciados para médicos y técnicos.
 
-First, run the development server:
+## 🛠️ Stack
 
+**Next.js 16** · **React 19** · **TypeScript 5** · **Tailwind CSS 4** · **shadcn/ui** · **Supabase (PostgreSQL + Auth + RLS)** · **Zod** · **React Hook Form**
+
+## ✨ Funcionalidades
+
+**Médicos**
+- Autenticación con validación de matrícula profesional
+- Gestión de pacientes (búsqueda por DNI, creación y edición)
+- Creación de solicitudes de estudios: múltiples estudios por solicitud, niveles de urgencia, proyecciones, lateralidad, indicación clínica y cálculo de costo en tiempo real
+- Dashboard con KPIs mensuales (solicitudes, facturación estimada, emergencias)
+- Historial de solicitudes con detalle expandible
+
+**Técnicos**
+- Cola de trabajo ordenada por urgencia (emergencia → urgente → rutina)
+- Actualización de estado con validación de transiciones y notas
+
+## 🚀 Cómo ejecutarlo
+
+**1. Clonar e instalar**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/FrancoGarayBenitez/radiologia-next.git
+cd radiologia-next
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**2. Variables de entorno** — crear `.env.local`:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://<tu-proyecto>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<tu-anon-key>
+TECNICO_SECRET_CODE=<codigo-secreto>
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**3. Base de datos** — ejecutar en el editor SQL de Supabase (en orden):
+```
+supabase/schema.sql
+supabase/migration_medicos_rls.sql
+supabase/migration_proyecciones.sql
+supabase/trigger_new_user.sql
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**4. Iniciar**
+```bash
+npm run dev   # http://localhost:3000
+```
