@@ -39,7 +39,7 @@ export async function actualizarEstadoAction(formData: FormData) {
     if (!user) return { error: "No autenticado." };
 
     const { data: medico } = await supabase
-        .from("medicos")
+        .from("personal")
         .select("rol")
         .eq("id", user.id)
         .single();

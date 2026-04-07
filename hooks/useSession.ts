@@ -32,7 +32,7 @@ export function useSession(): SessionState {
             }
 
             const { data: medico } = await supabase
-                .from("medicos")
+                .from("personal")
                 .select("*")
                 .eq("id", user.id)
                 .single();

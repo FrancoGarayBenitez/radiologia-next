@@ -69,8 +69,8 @@ export function RegisterForm() {
                                 <label
                                     key={opcion}
                                     className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm cursor-pointer transition-colors ${rol === opcion
-                                            ? "border-blue-500 bg-blue-500/10 text-blue-300"
-                                            : "border-slate-600 text-slate-400 hover:border-slate-500"
+                                        ? "border-blue-500 bg-blue-500/10 text-blue-300"
+                                        : "border-slate-600 text-slate-400 hover:border-slate-500"
                                         }`}
                                 >
                                     <input
@@ -115,22 +115,24 @@ export function RegisterForm() {
                         </div>
                     </div>
 
-                    {/* Matrícula */}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="matricula" className="text-slate-300">
-                            Número de matrícula
-                        </Label>
-                        <Input
-                            id="matricula"
-                            placeholder="12345"
-                            inputMode="numeric"
-                            className={INPUT_CLASS}
-                            {...register("matricula")}
-                        />
-                        {errors.matricula && (
-                            <p className="text-red-400 text-xs">{errors.matricula.message}</p>
-                        )}
-                    </div>
+                    {/* Matrícula — solo para médicos */}
+                    {rol === "medico" && (
+                        <div className="space-y-1.5">
+                            <Label htmlFor="matricula" className="text-slate-300">
+                                Número de matrícula
+                            </Label>
+                            <Input
+                                id="matricula"
+                                placeholder="12345"
+                                inputMode="numeric"
+                                className={INPUT_CLASS}
+                                {...register("matricula")}
+                            />
+                            {errors.matricula && (
+                                <p className="text-red-400 text-xs">{errors.matricula.message}</p>
+                            )}
+                        </div>
+                    )}
 
                     {/* Email */}
                     <div className="space-y-1.5">

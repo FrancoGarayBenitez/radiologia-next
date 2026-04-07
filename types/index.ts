@@ -2,14 +2,17 @@
 
 export type Rol = "medico" | "tecnico";
 
-export interface Medico {
+export interface Personal {
     id: string;           // UUID — vinculado a auth.users
     nombre: string;
     apellido: string;
-    matricula: string;
+    matricula?: string | null;
     rol: Rol;
     created_at: string;
 }
+
+// Alias para compatibilidad
+export type Medico = Personal;
 
 // ─── Pacientes ────────────────────────────────────────────────────────────────
 

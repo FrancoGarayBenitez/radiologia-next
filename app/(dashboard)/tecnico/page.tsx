@@ -16,7 +16,7 @@ export default async function TecnicoPage() {
 
     // Verificar rol
     const { data: medico } = await supabase
-        .from("medicos")
+        .from("personal")
         .select("rol, nombre, apellido")
         .eq("id", user.id)
         .single();
@@ -29,7 +29,7 @@ export default async function TecnicoPage() {
         .select(
             `*,
             paciente:pacientes(*),
-            medico:medicos(nombre, apellido, matricula),
+            medico:personal(nombre, apellido, matricula),
             items:solicitud_items(
                 *,
                 estudio:estudios(*)

@@ -13,10 +13,7 @@ export const loginSchema = z.object({
 export const registroSchema = z.object({
     nombre: z.string().min(1, "El nombre es requerido"),
     apellido: z.string().min(1, "El apellido es requerido"),
-    matricula: z
-        .string()
-        .min(1, "La matrícula es requerida")
-        .regex(/^\d+$/, "La matrícula solo debe contener números"),
+    matricula: z.string().optional(),
     email: z.string().min(1, "El email es requerido").email("Email inválido"),
     password: z
         .string()
@@ -24,6 +21,22 @@ export const registroSchema = z.object({
     rol: z.enum(["medico", "tecnico"]),
     // Solo requerido en el servidor cuando rol = tecnico
     codigoTecnico: z.string().optional(),
+}).superRefine((data, ctx) => {
+    if (data.rol === "medico") {
+        if (!data.matricula || data.matricula.trim() === "") {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "La matrícula es requerida",
+                path: ["matricula"],
+            });
+        } else if (!/^\d+$/.test(data.matricula)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "La matrícula solo debe contener números",
+                path: ["matricula"],
+            });
+        }
+    }
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

@@ -35,7 +35,7 @@ export default async function DashboardPage() {
     if (!user) redirect("/login");
 
     const { data: medico } = await supabase
-        .from("medicos")
+        .from("personal")
         .select("nombre, apellido, rol")
         .eq("id", user.id)
         .single();
