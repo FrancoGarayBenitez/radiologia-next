@@ -1,57 +1,66 @@
-/**
- * Iconos específicos por región anatómica.
- * Claves en minúsculas normalizadas para coincidir con estudio.region.toLowerCase().
- */
-export const REGION_ICONS: Record<string, string> = {
-    // ─── Cabeza ──────────────────────────────────────────────────────────────
-    "cráneo completo": "💀",
-    "huesos propios de la nariz": "👃",
-    "senos paranasales": "👁️",
-    "macizo facial": "😬",
-    "órbitas": "👁️",
-    "mandíbula": "🦷",
-    "atm (articulación temporomandibular)": "🦷",
-    "panorámica dental (opg)": "🦷",
+import {
+    Brain,
+    Bone,
+    Stethoscope,
+    Hand,
+    Footprints,
+    type LucideIcon,
+} from "lucide-react";
 
-    // ─── Columna ─────────────────────────────────────────────────────────────
-    "columna completa": "🦴",
-    "cervical": "🫀", // cuello aprox.
-    "dorsal": "🦴",
-    "lumbar": "🦴",
-    "lumbosacra": "🦴",
-    "sacro": "🦴",
-    "coxis": "🦴",
+type CategoriaAnatomica =
+    | "cabeza"
+    | "columna"
+    | "torax_abdomen"
+    | "miembro_superior"
+    | "miembro_inferior";
 
-    // ─── Tórax / Abdomen ─────────────────────────────────────────────────────
-    "tórax": "🫁",
-    "abdomen": "🫃",
-    "pelvis": "🦴",
-    "sacroilíacas": "🦴",
+interface RegionMeta {
+    icon: LucideIcon;
+    color: string;
+    lightBg: string;
+    label: string;
+}
 
-    // ─── Miembro superior ────────────────────────────────────────────────────
-    "hombro": "💪",
-    "escápula": "💪",
-    "clavícula": "🦴",
-    "brazo": "💪",
-    "codo": "🦾",
-    "antebrazo": "🦾",
-    "muñeca": "✋",
-    "mano": "✋",
-    "dedos (mano)": "☝️",
-
-    // ─── Miembro inferior ────────────────────────────────────────────────────
-    "cadera": "🦴",
-    "fémur": "🦴",
-    "rodilla": "🦵",
-    "pierna": "🦵",
-    "tobillo": "🦶",
-    "pie": "🦶",
-    "pie con carga": "🦶",
-    "calcáneo": "🦶",
-    "dedos (pie)": "🦶",
+const CATEGORIA_META: Record<CategoriaAnatomica, RegionMeta> = {
+    cabeza: {
+        icon: Brain,
+        color: "text-indigo-600",
+        lightBg: "bg-indigo-50",
+        label: "Cabeza",
+    },
+    columna: {
+        icon: Bone,
+        color: "text-emerald-600",
+        lightBg: "bg-emerald-50",
+        label: "Columna",
+    },
+    torax_abdomen: {
+        icon: Stethoscope,
+        color: "text-amber-600",
+        lightBg: "bg-amber-50",
+        label: "Tórax / Abdomen",
+    },
+    miembro_superior: {
+        icon: Hand,
+        color: "text-rose-600",
+        lightBg: "bg-rose-50",
+        label: "Miembro Superior",
+    },
+    miembro_inferior: {
+        icon: Footprints,
+        color: "text-violet-600",
+        lightBg: "bg-violet-50",
+        label: "Miembro Inferior",
+    },
 };
 
-/** Devuelve el emoji para la región, con fallback a 🩻 */
-export function getRegionIcon(region: string): string {
-    return REGION_ICONS[region.toLowerCase()] ?? "🩻";
+export function getRegionMeta(categoria: string): RegionMeta {
+    return (
+        CATEGORIA_META[categoria as CategoriaAnatomica] ?? {
+            icon: Bone,
+            color: "text-slate-500",
+            lightBg: "bg-slate-50",
+            label: categoria,
+        }
+    );
 }

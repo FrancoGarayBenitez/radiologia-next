@@ -14,19 +14,23 @@ export function useCarrito() {
      * las proyecciones seleccionadas (no duplica ni incrementa cantidad).
      */
     const agregar = useCallback(
-        (estudio: Estudio, lateralidad: Lateralidad = null, proyecciones: string[] = []) => {
-            const k = itemKey(estudio.id, lateralidad);
+        (
+            estudio: Estudio,
+            lateralidad: Lateralidad = null,
+            proyecciones: string[] = [],
+            prevLateralidad?: Lateralidad
+        ) => {
+            const cantidad = lateralidad === "bilateral" ? proyecciones.length * 2 : proyecciones.length;
             setItems((prev) => {
-                const existe = prev.find((i) => itemKey(i.estudio.id, i.lateralidad) === k);
-                if (existe) {
-                    // Actualiza proyecciones y recalcula cantidad
-                    return prev.map((i) =>
-                        itemKey(i.estudio.id, i.lateralidad) === k
-                            ? { ...i, proyecciones, cantidad: proyecciones.length }
-                            : i
-                    );
+                let items = prev;
+                // Eliminar item anterior explícitamente (maneja cambio de lateralidad)
+                if (prevLateralidad !== undefined) {
+                    const prevKey = itemKey(estudio.id, prevLateralidad);
+                    items = items.filter((i) => itemKey(i.estudio.id, i.lateralidad) !== prevKey);
                 }
-                return [...prev, { estudio, cantidad: proyecciones.length, lateralidad, proyecciones }];
+                // Seguridad: eliminar cualquier otro item del mismo estudio
+                items = items.filter((i) => i.estudio.id !== estudio.id);
+                return [...items, { estudio, cantidad, lateralidad, proyecciones }];
             });
         },
         []

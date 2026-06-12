@@ -1,3 +1,4 @@
+"use no memo";
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -27,6 +28,7 @@ export function RegisterForm() {
         defaultValues: { rol: "medico" },
     });
 
+    // eslint-disable-next-line react-hooks/incompatible-library
     const rol = watch("rol");
 
     function onSubmit(data: RegistroInput) {
