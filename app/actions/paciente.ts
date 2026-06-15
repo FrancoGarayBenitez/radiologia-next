@@ -5,6 +5,17 @@ import { pacienteSchema } from "@/lib/validations/paciente";
 import { redirect } from "next/navigation";
 import type { Paciente } from "@/types";
 
+// ─── Obtener lista de obras sociales ─────────────────────────────────────────
+
+export async function obtenerObrasSociales(): Promise<{ id: number; nombre: string }[]> {
+    const supabase = await createClient();
+    const { data } = await supabase
+        .from("obras_sociales")
+        .select("id, nombre")
+        .order("nombre");
+    return data ?? [];
+}
+
 // ─── Buscar paciente por DNI ──────────────────────────────────────────────────
 
 export async function buscarPacientePorDNI(dni: string): Promise<Paciente | null> {

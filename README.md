@@ -11,7 +11,7 @@ Aplicación web fullstack para la gestión de solicitudes de estudios radiológi
 **Médicos**
 
 - Autenticación con validación de matrícula profesional
-- Gestión de pacientes (búsqueda por DNI, creación y edición)
+- Gestión de pacientes (búsqueda por DNI, obra social con autocompletado, creación y edición)
 - Creación de solicitudes de estudios: múltiples estudios por solicitud, niveles de urgencia, proyecciones, lateralidad, indicación clínica y cálculo de costo en tiempo real
 - Dashboard con KPIs mensuales (solicitudes, facturación estimada, emergencias)
 - Historial de solicitudes con detalle expandible
@@ -66,8 +66,8 @@ cp .env.example .env.local
 **3. Base de datos** — ejecutar en el editor SQL de Supabase:
 
 ```
-supabase/schema.sql
-supabase/seed_demo.sql   ← opcional, usuarios de prueba
+supabase/schema.sql        ← idempotente, se puede re-ejecutar sin errores
+supabase/seed_demo.sql     ← opcional, usuarios de prueba
 ```
 
 **4. Iniciar**

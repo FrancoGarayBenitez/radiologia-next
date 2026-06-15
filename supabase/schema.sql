@@ -20,16 +20,20 @@ CREATE TABLE IF NOT EXISTS personal (
 ALTER TABLE personal ENABLE ROW LEVEL SECURITY;
 
 -- Cada usuario solo ve y edita su propio perfil
+DROP POLICY IF EXISTS "personal_select_own" ON personal;
 CREATE POLICY "personal_select_own" ON personal
   FOR SELECT USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "personal_insert_own" ON personal;
 CREATE POLICY "personal_insert_own" ON personal
   FOR INSERT WITH CHECK (auth.uid() = id);
 
+DROP POLICY IF EXISTS "personal_update_own" ON personal;
 CREATE POLICY "personal_update_own" ON personal
   FOR UPDATE USING (auth.uid() = id);
 
 -- El técnico necesita leer el perfil del médico solicitante (cola de trabajo)
+DROP POLICY IF EXISTS "personal_tecnico_read_all" ON personal;
 CREATE POLICY "personal_tecnico_read_all" ON personal
   FOR SELECT USING (
     (auth.jwt() -> 'user_metadata' ->> 'rol') = 'tecnico'
@@ -56,6 +60,7 @@ CREATE TABLE IF NOT EXISTS estudios (
 
 ALTER TABLE estudios ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "estudios_select_auth" ON estudios;
 CREATE POLICY "estudios_select_auth" ON estudios
   FOR SELECT TO authenticated USING (true);
 
@@ -72,17 +77,53 @@ CREATE TABLE IF NOT EXISTS pacientes (
 
 ALTER TABLE pacientes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "pacientes_select_auth" ON pacientes;
 CREATE POLICY "pacientes_select_auth" ON pacientes
   FOR SELECT TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "pacientes_insert_auth" ON pacientes;
 CREATE POLICY "pacientes_insert_auth" ON pacientes
   FOR INSERT TO authenticated WITH CHECK (true);
 
+DROP POLICY IF EXISTS "pacientes_update_auth" ON pacientes;
 CREATE POLICY "pacientes_update_auth" ON pacientes
   FOR UPDATE TO authenticated USING (true);
 
 
--- ─── 4. SOLICITUDES ──────────────────────────────────────────
+-- ─── 4. OBRAS SOCIALES ───────────────────────────────────────
+CREATE TABLE IF NOT EXISTS obras_sociales (
+  id     SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL UNIQUE
+);
+
+ALTER TABLE obras_sociales ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "obras_sociales_select_auth" ON obras_sociales;
+CREATE POLICY "obras_sociales_select_auth" ON obras_sociales
+  FOR SELECT TO authenticated USING (true);
+
+INSERT INTO obras_sociales (nombre) VALUES
+  ('Particular'),
+  ('PAMI'),
+  ('OSDE'),
+  ('Swiss Medical'),
+  ('Galeno'),
+  ('Medicus'),
+  ('OSEP'),
+  ('OSPE'),
+  ('OSECAC'),
+  ('Sancor Salud'),
+  ('Omint'),
+  ('OSPAC'),
+  ('OSPIPA'),
+  ('OSPRERA'),
+  ('Hospital Italiano')
+ON CONFLICT (nombre) DO NOTHING;
+
+GRANT SELECT ON obras_sociales TO authenticated;
+
+
+-- ─── 5. SOLICITUDES ──────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS solicitudes (
   id                 SERIAL PRIMARY KEY,
   medico_id          UUID NOT NULL REFERENCES personal(id),
@@ -100,22 +141,25 @@ CREATE TABLE IF NOT EXISTS solicitudes (
 ALTER TABLE solicitudes ENABLE ROW LEVEL SECURITY;
 
 -- Médico: solo ve sus propias solicitudes
+DROP POLICY IF EXISTS "solicitudes_medico_own" ON solicitudes;
 CREATE POLICY "solicitudes_medico_own" ON solicitudes
   FOR ALL USING (auth.uid() = medico_id);
 
 -- Técnico: ve y actualiza todas las solicitudes (cola de trabajo)
+DROP POLICY IF EXISTS "solicitudes_tecnico_all" ON solicitudes;
 CREATE POLICY "solicitudes_tecnico_all" ON solicitudes
   FOR SELECT USING (
     EXISTS (SELECT 1 FROM personal WHERE id = auth.uid() AND rol = 'tecnico')
   );
 
+DROP POLICY IF EXISTS "solicitudes_tecnico_update" ON solicitudes;
 CREATE POLICY "solicitudes_tecnico_update" ON solicitudes
   FOR UPDATE USING (
     EXISTS (SELECT 1 FROM personal WHERE id = auth.uid() AND rol = 'tecnico')
   );
 
 
--- ─── 5. ITEMS DE SOLICITUD ───────────────────────────────────
+-- ─── 6. ITEMS DE SOLICITUD ───────────────────────────────────
 --   proyecciones = incidencias concretas solicitadas en este item.
 -- ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS solicitud_items (
@@ -130,18 +174,20 @@ CREATE TABLE IF NOT EXISTS solicitud_items (
 
 ALTER TABLE solicitud_items ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "items_medico_own" ON solicitud_items;
 CREATE POLICY "items_medico_own" ON solicitud_items
   FOR ALL USING (
     solicitud_id IN (SELECT id FROM solicitudes WHERE medico_id = auth.uid())
   );
 
+DROP POLICY IF EXISTS "items_tecnico_select" ON solicitud_items;
 CREATE POLICY "items_tecnico_select" ON solicitud_items
   FOR SELECT USING (
     EXISTS (SELECT 1 FROM personal WHERE id = auth.uid() AND rol = 'tecnico')
   );
 
 
--- ─── 6. TRIGGER — nuevo usuario ──────────────────────────────
+-- ─── 7. TRIGGER — nuevo usuario ──────────────────────────────
 --   Crea el registro en personal automáticamente al registrarse.
 --   matricula se almacena solo si viene en los metadatos (médicos).
 -- ─────────────────────────────────────────────────────────────
@@ -167,7 +213,7 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 
--- ─── 7. PERMISOS — roles de Supabase ────────────────────────
+-- ─── 8. PERMISOS — roles de Supabase ────────────────────────
 --   Sin estos GRANTs, el cliente browser (rol authenticated) recibe 403
 --   aunque las políticas RLS sean correctas.
 -- ─────────────────────────────────────────────────────────────
@@ -176,13 +222,14 @@ GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT, INSERT, UPDATE        ON personal          TO authenticated;
 GRANT SELECT                        ON estudios          TO authenticated;
 GRANT SELECT, INSERT, UPDATE        ON pacientes         TO authenticated;
+GRANT SELECT                        ON obras_sociales    TO authenticated;
 GRANT SELECT, INSERT, UPDATE        ON solicitudes       TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON solicitud_items  TO authenticated;
 
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
 
 
--- ─── 8. DATOS INICIALES — Catálogo de estudios ───────────────
+-- ─── 9. DATOS INICIALES — Catálogo de estudios ───────────────
 --   precio = valor por incidencia.
 --   proyecciones = incidencias radiológicas disponibles.
 -- ─────────────────────────────────────────────────────────────

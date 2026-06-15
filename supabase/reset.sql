@@ -15,7 +15,8 @@ TRUNCATE TABLE
   public.solicitudes,
   public.personal,
   public.pacientes,
-  public.estudios
+  public.estudios,
+  public.obras_sociales
 RESTART IDENTITY CASCADE;
 
 
@@ -32,15 +33,17 @@ DELETE FROM auth.users;
 
 
 -- ─── 3. Verificación ─────────────────────────────────────────
-SELECT 'auth.users'      AS tabla, COUNT(*) AS filas FROM auth.users
+SELECT 'auth.users'        AS tabla, COUNT(*) AS filas FROM auth.users
 UNION ALL
-SELECT 'personal',        COUNT(*) FROM public.personal
+SELECT 'personal',          COUNT(*) FROM public.personal
 UNION ALL
-SELECT 'pacientes',       COUNT(*) FROM public.pacientes
+SELECT 'pacientes',         COUNT(*) FROM public.pacientes
 UNION ALL
-SELECT 'estudios',        COUNT(*) FROM public.estudios
+SELECT 'obras_sociales',    COUNT(*) FROM public.obras_sociales
 UNION ALL
-SELECT 'solicitudes',     COUNT(*) FROM public.solicitudes
+SELECT 'estudios',          COUNT(*) FROM public.estudios
 UNION ALL
-SELECT 'solicitud_items', COUNT(*) FROM public.solicitud_items;
+SELECT 'solicitudes',       COUNT(*) FROM public.solicitudes
+UNION ALL
+SELECT 'solicitud_items',   COUNT(*) FROM public.solicitud_items;
 -- Todas las filas deben ser 0 antes de continuar con schema.sql

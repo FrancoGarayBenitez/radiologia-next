@@ -3,15 +3,16 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { pacienteSchema, type PacienteInput } from "@/lib/validations/paciente";
-import { buscarPacientePorDNI, guardarPacienteAction } from "@/app/actions/paciente";
+import { buscarPacientePorDNI, guardarPacienteAction, obtenerObrasSociales } from "@/app/actions/paciente";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSession } from "@/hooks/useSession";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import type { Paciente } from "@/types";
+import { ObraSocialCombobox } from "./ObraSocialCombobox";
 
 export function PacienteForm() {
     const { medico } = useSession();
@@ -20,11 +21,17 @@ export function PacienteForm() {
     const [isDniSearching, setIsDniSearching] = useState(false);
     // false = sin búsqueda aún | null = buscado, no encontrado | Paciente = encontrado
     const [pacienteStatus, setPacienteStatus] = useState<Paciente | null | false>(false);
+    const [obraSocialOptions, setObraSocialOptions] = useState<{ id: number; nombre: string }[]>([]);
+
+    useEffect(() => {
+        obtenerObrasSociales().then(setObraSocialOptions);
+    }, []);
 
     const {
         register,
         handleSubmit,
         setValue,
+        watch,
         formState: { errors },
     } = useForm<PacienteInput>({
         resolver: zodResolver(pacienteSchema),
@@ -76,7 +83,7 @@ export function PacienteForm() {
             {medico && (
                 <div>
                     <h1 className="text-2xl font-semibold text-slate-800">
-                        Hola, Dr/a. {medico.nombre} {medico.apellido}
+                        Hola, {medico.nombre.toLowerCase().endsWith("a") ? "Dra." : "Dr."} {medico.nombre} {medico.apellido}
                     </h1>
                     <p className="text-slate-500 mt-1 text-sm">
                         Mat. {medico.matricula} · Ingrese los datos del paciente para continuar
@@ -143,10 +150,10 @@ export function PacienteForm() {
                                 Obra social{" "}
                                 <span className="text-slate-400 font-normal text-xs">(opcional)</span>
                             </Label>
-                            <Input
-                                id="obra_social"
-                                placeholder="Ej: OSEP, PAMI, OSPEA, Particular..."
-                                {...register("obra_social")}
+                            <ObraSocialCombobox
+                                value={watch("obra_social") ?? ""}
+                                onChange={(v) => setValue("obra_social", v, { shouldValidate: true })}
+                                options={obraSocialOptions}
                             />
                         </div>
 
