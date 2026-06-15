@@ -21,6 +21,19 @@ interface Props {
 type FiltroEstado = EstadoSolicitud | "todos";
 type FiltroUrgencia = NivelUrgencia | "todos";
 
+const ESTADO_LABELS: Record<EstadoSolicitud, string> = {
+    pendiente: "Pendiente",
+    en_proceso: "En proceso",
+    completado: "Completado",
+    cancelado: "Cancelado",
+};
+
+const URGENCIA_ICONS: Record<NivelUrgencia, string> = {
+    rutina: "🟢",
+    urgente: "🟡",
+    emergencia: "🔴",
+};
+
 export function HistorialClient({ solicitudes: inicial }: Props) {
     const solicitudes = useHistorialRealtime(inicial);
     const [search, setSearch] = useState("");
@@ -63,7 +76,11 @@ export function HistorialClient({ solicitudes: inicial }: Props) {
                     onValueChange={(v) => setFiltroEstado((v ?? "todos") as FiltroEstado)}
                 >
                     <SelectTrigger className="sm:w-44">
-                        <SelectValue placeholder="Estado" />
+                        <SelectValue placeholder="Todos los estados">
+                            {filtroEstado === "todos"
+                                ? "Todos los estados"
+                                : ESTADO_LABELS[filtroEstado as EstadoSolicitud]}
+                        </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="todos">Todos los estados</SelectItem>
@@ -78,10 +95,14 @@ export function HistorialClient({ solicitudes: inicial }: Props) {
                     onValueChange={(v) => setFiltroUrgencia((v ?? "todos") as FiltroUrgencia)}
                 >
                     <SelectTrigger className="sm:w-44">
-                        <SelectValue placeholder="Urgencia" />
+                        <SelectValue placeholder="Todas las urgencias">
+                            {filtroUrgencia === "todos"
+                                ? "Todas las urgencias"
+                                : `${URGENCIA_ICONS[filtroUrgencia as NivelUrgencia]} ${filtroUrgencia.charAt(0).toUpperCase() + filtroUrgencia.slice(1)}`}
+                        </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="todos">Toda urgencia</SelectItem>
+                        <SelectItem value="todos">Todas las urgencias</SelectItem>
                         <SelectItem value="rutina">🟢 Rutina</SelectItem>
                         <SelectItem value="urgente">🟡 Urgente</SelectItem>
                         <SelectItem value="emergencia">🔴 Emergencia</SelectItem>

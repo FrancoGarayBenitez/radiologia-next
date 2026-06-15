@@ -100,7 +100,7 @@ export function SolicitudCard({ solicitud, onVerDetalle }: Props) {
                 </div>
 
                 {/* Precio total + botón */}
-                <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 sm:shrink-0">
+                <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 sm:shrink-0 sm:pr-2">
                     <span className="font-bold text-slate-800 text-base">
                         {formatPrecio(solicitud.total)}
                     </span>

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { formatFecha, formatPrecio } from "@/lib/utils";
+import { MoreHorizontal } from "lucide-react";
+import { formatFecha } from "@/lib/utils";
+import { actualizarEstadoAction } from "@/app/actions/tecnico";
 import { CambiarEstadoForm } from "./CambiarEstadoForm";
 import type { Solicitud, EstadoSolicitud, NivelUrgencia } from "@/types";
 
@@ -34,6 +36,13 @@ const URGENCIA_ICONS: Record<NivelUrgencia, string> = {
     emergencia: "🔴",
 };
 
+const CARD_BORDER: Record<EstadoSolicitud, string> = {
+    pendiente: "border-slate-200",
+    en_proceso: "border-blue-300",
+    completado: "border-slate-200",
+    cancelado: "border-slate-200",
+};
+
 const LATERALIDAD_LABELS: Record<string, string> = {
     izquierdo: "Izq.",
     derecho: "Der.",
@@ -46,16 +55,29 @@ interface Props {
 
 export function SolicitudRow({ solicitud }: Props) {
     const [expanded, setExpanded] = useState(false);
+    const [isPending, startTransition] = useTransition();
     const paciente = solicitud.paciente;
     const medico = solicitud.medico;
 
+    function handleDirectAction(nuevoEstado: EstadoSolicitud) {
+        const fd = new FormData();
+        fd.append("solicitudId", String(solicitud.id));
+        fd.append("estado", nuevoEstado);
+        startTransition(async () => {
+            await actualizarEstadoAction(fd);
+        });
+    }
+
     return (
         <div
-            className={`bg-white border border-slate-200 border-l-4 ${URGENCIA_BORDER[solicitud.urgencia]} rounded-xl overflow-hidden shadow-sm`}
+            className={`bg-white border ${CARD_BORDER[solicitud.estado]} border-l-4 ${URGENCIA_BORDER[solicitud.urgencia]} rounded-xl overflow-hidden shadow-sm`}
         >
             {/* Cabecera */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4">
-                <div className="flex-1 min-w-0 space-y-1">
+                <div
+                    className="flex-1 min-w-0 space-y-1 cursor-pointer"
+                    onClick={() => setExpanded((v) => !v)}
+                >
                     {/* Paciente */}
                     <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-slate-800">
@@ -87,9 +109,34 @@ export function SolicitudRow({ solicitud }: Props) {
                             &ldquo;{solicitud.indicacion_clinica}&rdquo;
                         </p>
                     )}
+                    {/* Estudios — visibles sin expandir */}
+                    {solicitud.items && solicitud.items.length > 0 && (
+                        <div className="flex flex-wrap gap-x-2 gap-y-1.5 mt-1.5">
+                            {solicitud.items.map((item) => (
+                                <span key={item.id} className="inline-flex flex-wrap items-center gap-1">
+                                    <span className="inline-flex items-center gap-1 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 rounded-md px-2 py-0.5 leading-tight">
+                                        {item.estudio?.region}
+                                        {item.lateralidad && (
+                                            <span className="text-blue-400">
+                                                ({LATERALIDAD_LABELS[item.lateralidad] ?? item.lateralidad})
+                                            </span>
+                                        )}
+                                    </span>
+                                    {item.proyecciones?.map((p) => (
+                                        <span
+                                            key={p}
+                                            className="text-[10px] bg-slate-100 text-slate-600 rounded px-1.5 py-0.5 leading-tight"
+                                        >
+                                            {p}
+                                        </span>
+                                    ))}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
-                {/* Estado + total + expandir */}
+                {/* Estado + acciones */}
                 <div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0">
                     <Badge
                         variant="outline"
@@ -97,17 +144,45 @@ export function SolicitudRow({ solicitud }: Props) {
                     >
                         {ESTADO_LABELS[solicitud.estado]}
                     </Badge>
-                    <span className="font-bold text-slate-800">{formatPrecio(solicitud.total)}</span>
-                    {solicitud.estado !== "completado" && solicitud.estado !== "cancelado" && (
+                    <div className="flex sm:flex-col items-center gap-1.5">
+                        {solicitud.estado === "pendiente" && (
+                            <Button
+                                size="sm"
+                                className="text-xs h-7 px-3"
+                                disabled={isPending}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDirectAction("en_proceso");
+                                }}
+                            >
+                                {isPending ? "…" : "Iniciar estudio"}
+                            </Button>
+                        )}
+                        {solicitud.estado === "en_proceso" && (
+                            <Button
+                                size="sm"
+                                className="text-xs h-7 px-3 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                disabled={isPending}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDirectAction("completado");
+                                }}
+                            >
+                                {isPending ? "…" : "Finalizar estudio"}
+                            </Button>
+                        )}
                         <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 px-3"
-                            onClick={() => setExpanded((v) => !v)}
+                            size="icon"
+                            variant="ghost"
+                            className="size-6"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setExpanded((v) => !v);
+                            }}
                         >
-                            {expanded ? "Cerrar" : "Gestionar"}
+                            <MoreHorizontal className="size-4 text-slate-400" />
                         </Button>
-                    )}
+                    </div>
                 </div>
             </div>
 
@@ -116,48 +191,6 @@ export function SolicitudRow({ solicitud }: Props) {
                 <>
                     <Separator />
                     <div className="p-4 bg-slate-50 space-y-4">
-                        {/* Lista de estudios */}
-                        <div>
-                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                                Estudios
-                            </p>
-                            <ul className="space-y-2">
-                                {solicitud.items?.map((item) => (
-                                    <li key={item.id} className="text-sm text-slate-700">
-                                        <div className="flex justify-between items-start gap-2">
-                                            <div className="min-w-0">
-                                                <span className="font-medium capitalize">
-                                                    {item.estudio?.region}
-                                                </span>
-                                                {item.lateralidad && (
-                                                    <span className="text-blue-500 ml-1 text-xs">
-                                                        ({LATERALIDAD_LABELS[item.lateralidad] ?? item.lateralidad})
-                                                    </span>
-                                                )}
-                                                {/* Incidencias a realizar */}
-                                                {item.proyecciones?.length > 0 && (
-                                                    <div className="flex flex-wrap gap-1 mt-1">
-                                                        {item.proyecciones.map((p) => (
-                                                            <span
-                                                                key={p}
-                                                                className="inline-block text-[10px] bg-blue-50 text-blue-600 border border-blue-100 rounded px-1.5 py-0.5 leading-tight font-medium"
-                                                            >
-                                                                {p}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <span className="font-medium shrink-0">
-                                                {formatPrecio(item.precio_unit)}
-                                            </span>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Formulario de cambio de estado */}
                         <CambiarEstadoForm solicitud={solicitud} onDone={() => setExpanded(false)} />
                     </div>
                 </>

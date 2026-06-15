@@ -6,20 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { actualizarEstadoAction } from "@/app/actions/tecnico";
 import type { Solicitud, EstadoSolicitud } from "@/types";
 
-const SIGUIENTE_ESTADO: Record<EstadoSolicitud, EstadoSolicitud | null> = {
-    pendiente: "en_proceso",
-    en_proceso: "completado",
-    completado: null,
-    cancelado: null,
-};
-
-const BOTON_LABELS: Record<EstadoSolicitud, string> = {
-    pendiente: "Tomar → En proceso",
-    en_proceso: "Marcar como completado",
-    completado: "",
-    cancelado: "",
-};
-
 interface Props {
     solicitud: Solicitud;
     onDone: () => void;
@@ -29,9 +15,6 @@ export function CambiarEstadoForm({ solicitud, onDone }: Props) {
     const [notas, setNotas] = useState(solicitud.notas_tecnico ?? "");
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
-
-    const siguiente = SIGUIENTE_ESTADO[solicitud.estado];
-    if (!siguiente) return null;
 
     function handleSubmit(nuevoEstado: EstadoSolicitud) {
         setError(null);
@@ -70,27 +53,22 @@ export function CambiarEstadoForm({ solicitud, onDone }: Props) {
                 <p className="text-xs text-red-500">{error}</p>
             )}
 
-            <div className="flex gap-2">
-                <Button
-                    type="button"
-                    size="sm"
-                    disabled={isPending}
-                    onClick={() => handleSubmit(siguiente)}
-                    className="h-8 text-xs"
-                >
-                    {isPending ? "Guardando…" : BOTON_LABELS[solicitud.estado]}
-                </Button>
-                <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    disabled={isPending}
-                    onClick={() => handleSubmit("cancelado")}
-                    className="h-8 text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
-                >
-                    Cancelar solicitud
-                </Button>
-            </div>
+            <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => {
+                    if (!notas.trim()) {
+                        setError("Debe indicar un motivo para devolver la solicitud.");
+                        return;
+                    }
+                    handleSubmit("cancelado");
+                }}
+                className="h-8 text-xs text-slate-600"
+            >
+                Devolver al médico
+            </Button>
         </div>
     );
 }
