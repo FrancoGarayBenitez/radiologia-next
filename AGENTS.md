@@ -104,8 +104,9 @@ npm run lint       # ESLint
 1. `supabase/schema.sql` — tablas, RLS, trigger, catálogo de 33 estudios, obras sociales
    (100% idempotente — `DROP POLICY IF EXISTS` antes de cada `CREATE POLICY`)
 2. `supabase/seed_demo.sql` — usuarios de prueba (opcional)
+3. `supabase/seed_pacientes_solicitudes.sql` — 5 pacientes + 6 solicitudes demo (opcional, famosos argentinos y ficción)
 
-Para reset: `supabase/reset.sql` (destructivo — trunca datos + auth.users), luego schema + seed.
+Para reset: `supabase/reset.sql` (destructivo — trunca datos + auth.users), luego schema + seeds.
 
 ## Usuarios demo
 
@@ -113,3 +114,17 @@ Para reset: `supabase/reset.sql` (destructivo — trunca datos + auth.users), lu
 |---------|----------------|------------|-------------------|
 | Médico  | house@demo.com  | Demo1234!  | 4077              |
 | Técnico | marty@demo.com  | Demo1234!  | tec2026           |
+
+## Pacientes demo
+
+Después de ejecutar `supabase/seed_pacientes_solicitudes.sql`:
+
+| Nombre | Apellido | DNI | Obra social | Inspirado en |
+|---|---|---|---|---|
+| Ricardo | Darín | 18234567 | OSDE | Actor argentino |
+| Mirtha | Legrand | 09876543 | PAMI | Conductora argentina |
+| José | Argento | 23987123 | OSEP | Pepe Argento (*Los Simuladores*) |
+| Rick | Sánchez | 30112233 | Galeno | *Rick & Morty* |
+| Guille | Francella | 27555444 | Particular | Actor argentino |
+
+Incluye 6 solicitudes demo en distintos estados (pendiente, en_proceso, completado) con variadas urgencias e indicaciones clínicas.

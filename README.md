@@ -21,9 +21,9 @@ Aplicación web fullstack para la gestión de solicitudes de estudios radiológi
 - Cola de trabajo ordenada por urgencia (emergencia → urgente → rutina)
 - Actualización de estado con validación de transiciones y notas
 
-## 👤 Usuarios demo
+## 👤 Datos demo
 
-Después de ejecutar `supabase/seed_demo.sql`, los siguientes usuarios están disponibles:
+Después de ejecutar `supabase/seed_demo.sql` y `supabase/seed_pacientes_solicitudes.sql`:
 
 ### Médico — Dr. Gregory House _(House M.D.)_
 
@@ -44,6 +44,18 @@ Después de ejecutar `supabase/seed_demo.sql`, los siguientes usuarios están di
 | Panel          | `/tecnico` — cola de trabajo, cambio de estado |
 
 > Los usuarios demo se crean con `email_confirmed_at` ya establecido, por lo que no requieren confirmación de email.
+
+### Pacientes demo
+
+| Nombre | Apellido | DNI | Obra social |
+|---|---|---|---|
+| Ricardo | Darín | 18234567 | OSDE |
+| Mirtha | Legrand | 09876543 | PAMI |
+| José | Argento | 23987123 | OSEP |
+| Rick | Sánchez | 30112233 | Galeno |
+| Guille | Francella | 27555444 | Particular |
+
+Incluye 6 solicitudes demo en distintos estados (pendiente, en_proceso, completado) con variadas urgencias e indicaciones clínicas.
 
 ---
 
@@ -66,8 +78,9 @@ cp .env.example .env.local
 **3. Base de datos** — ejecutar en el editor SQL de Supabase:
 
 ```
-supabase/schema.sql        ← idempotente, se puede re-ejecutar sin errores
-supabase/seed_demo.sql     ← opcional, usuarios de prueba
+supabase/schema.sql                    ← idempotente, se puede re-ejecutar sin errores
+supabase/seed_demo.sql                 ← opcional, usuarios de prueba
+supabase/seed_pacientes_solicitudes.sql ← opcional, pacientes y solicitudes demo
 ```
 
 **4. Iniciar**
