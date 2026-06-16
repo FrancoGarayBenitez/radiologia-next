@@ -83,12 +83,20 @@ export function Navbar() {
                                 </AvatarFallback>
                             </Avatar>
                             <span className="hidden md:block text-sm text-slate-200">
-                                {medico.rol === "tecnico" ? "Téc." : "Dr/a."}{" "}
+                                {medico.rol === "tecnico"
+                                    ? "Téc."
+                                    : medico.nombre.toLowerCase().endsWith("a")
+                                        ? "Dra."
+                                        : "Dr."}{" "}
                                 {medico.nombre} {medico.apellido}
                             </span>
-                            {medico.rol === "tecnico" && (
+                            {medico.rol === "tecnico" ? (
                                 <Badge variant="outline" className="text-slate-300 border-slate-500 text-xs">
                                     Técnico
+                                </Badge>
+                            ) : (
+                                <Badge variant="outline" className="text-blue-300 border-blue-500 text-xs">
+                                    Médico
                                 </Badge>
                             )}
                         </DropdownMenuTrigger>
